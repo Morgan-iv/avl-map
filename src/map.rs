@@ -57,11 +57,11 @@ impl<K: Eq + Ord, V> AvlMap<K, V> {
     }
 
     pub fn iter(&self) -> AvlMapIter<&Box<Node<K, V>>> {
-        AvlMapIter::new(self.root.as_ref(), self.size, false)
+        AvlMapIter::new(self.root.as_ref(), self.size)
     }
     
     pub fn iter_mut(&mut self) -> AvlMapIter<&mut Box<Node<K, V>>> {
-        AvlMapIter::new(self.root.as_mut(), self.size, false)
+        AvlMapIter::new(self.root.as_mut(), self.size)
     }
 }
 
@@ -70,7 +70,7 @@ impl<K: Eq + Ord, V> IntoIterator for AvlMap<K, V> {
     type IntoIter = AvlMapIter<Box<Node<K, V>>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        AvlMapIter::new(self.root, self.size, false)
+        AvlMapIter::new(self.root, self.size)
     }
 }
 

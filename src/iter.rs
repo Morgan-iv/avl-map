@@ -1,5 +1,39 @@
-use std::iter::{ExactSizeIterator, Iterator};
+use std::iter::{DoubleEndedIterator, ExactSizeIterator, Iterator};
+use std::collections::VecDeque;
 use crate::tree::Node;
+
+macro_rules! walk {
+    ($name:ident, $pop:ident, $push:ident, $swap:ident) => {
+        fn $name(&mut self) -> Option<NT::ET> {
+            const SWAP: bool = $swap;
+            self.deque.$pop().map(|elem| {
+                match elem {
+                    StackElem::V(value) => {
+                        self.remain -= 1;
+                        value
+                    }
+                    StackElem::N(node) => {
+                        let (left, value, right) = if !SWAP {
+                            let (left, value, right) = node.split();
+                            (left, value, right)
+                        } else {
+                            let (left, value, right) = node.split();
+                            (right, value, left)
+                        };
+                        if let Some(n) = right {
+                            self.deque.$push(StackElem::N(n))
+                        };
+                        self.deque.$push(StackElem::V(value));
+                        if let Some(n) = left {
+                            self.deque.$push(StackElem::N(n))
+                        };
+                        self.$name().unwrap()
+                    }
+                }
+            })
+        }
+    }
+}
 
 pub trait Split
 where
@@ -39,65 +73,40 @@ pub enum StackElem<NT: Split> {
 }
 
 pub struct AvlMapIter<NT: Split> {
-    stack: Vec<StackElem<NT>>,
+    deque: VecDeque<StackElem<NT>>,
     remain: usize,
-    reverse: bool,
 }
 
 impl<NT: Split> AvlMapIter<NT> {
-    pub(crate) fn new(root: Option<NT>, remain: usize, reverse: bool) -> Self {
+    pub(crate) fn new(root: Option<NT>, remain: usize) -> Self {
         AvlMapIter {
-            stack: match root {
-                None => Vec::new(),
-                Some(n) => vec![StackElem::N(n)],
+            deque: match root {
+                None => VecDeque::new(),
+                Some(n) => VecDeque::from(vec![StackElem::N(n)]),
             },
             remain,
-            reverse,
         }
     }
 
-    fn walk(&mut self) -> Option<NT::ET> {
-        self.stack.pop().map(|elem| {
-            match elem {
-                StackElem::V(value) => {
-                    self.remain -= 1;
-                    value
-                }
-                StackElem::N(node) => {
-                    let (left, value, right) = node.split();
-                    if !self.reverse {
-                        if let Some(n) = right {
-                            self.stack.push(StackElem::N(n))
-                        };
-                        self.stack.push(StackElem::V(value));
-                        if let Some(n) = left {
-                            self.stack.push(StackElem::N(n))
-                        };
-                    } else {
-                        if let Some(n) = left {
-                            self.stack.push(StackElem::N(n))
-                        };
-                        self.stack.push(StackElem::V(value));
-                        if let Some(n) = right {
-                            self.stack.push(StackElem::N(n))
-                        };
-                    }
-                    self.walk().unwrap()
-                }
-            }
-        })
-    }
+    walk!(walk_l, pop_back, push_back, false);
+    walk!(walk_r, pop_front, push_front, true);
 }
 
 impl<NT: Split> Iterator for AvlMapIter<NT> {
     type Item = NT::ET;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.walk()
+        self.walk_l()
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
         (self.remain, Some(self.remain))
+    }
+}
+
+impl<NT: Split> DoubleEndedIterator for AvlMapIter<NT> {
+    fn next_back(&mut self) -> Option<<Self as Iterator>::Item> {
+        self.walk_r()
     }
 }
 
