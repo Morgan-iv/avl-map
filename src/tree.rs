@@ -19,6 +19,7 @@ impl<K: Eq + Ord, V> Node<K, V> {
         }
     }
 
+    #[inline]
     fn get_height(node: &Option<Box<Self>>) -> u8 {
         match node {
             Some(n) => n.height,
@@ -26,16 +27,19 @@ impl<K: Eq + Ord, V> Node<K, V> {
         }
     }
 
+    #[inline]
     fn bfactor(&self) -> i8 {
         Self::get_height(&self.right) as i8 - Self::get_height(&self.left) as i8
     }
 
+    #[inline]
     fn fix_height(&mut self) {
         let hl = Self::get_height(&self.left);
         let hr = Self::get_height(&self.right);
         self.height = if hl > hr { hl } else { hr } + 1;
     }
 
+    #[inline]
     fn rotate_right(self: Box<Self>) -> Box<Self> {
         let mut p = self;
         let mut q = p.left.unwrap();
@@ -47,6 +51,7 @@ impl<K: Eq + Ord, V> Node<K, V> {
         q
     }
 
+    #[inline]
     fn rotate_left(self: Box<Self>) -> Box<Self> {
         let mut q = self;
         let mut p = q.right.unwrap();
@@ -58,6 +63,7 @@ impl<K: Eq + Ord, V> Node<K, V> {
         p
     }
 
+    #[inline]
     fn balance(mut self: Box<Self>) -> Box<Self> {
         self.fix_height();
         if self.bfactor() == 2 {
