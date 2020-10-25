@@ -149,24 +149,18 @@ impl<K: Eq + Ord, V> Node<K, V> {
     }
 
     pub(crate) fn find<'a>(node: &'a Option<Box<Self>>, key: &K) -> Option<&'a V> {
-        match node {
-            None => None,
-            Some(n) => match key.cmp(&n.key) {
-                Less => Self::find(&n.left, key),
-                Greater => Self::find(&n.right, key),
-                Equal => Some(&n.value),
-            },
-        }
+        node.as_ref().map(|n| match key.cmp(&n.key) {
+            Less => Self::find(&n.left, key),
+            Greater => Self::find(&n.right, key),
+            Equal => Some(&n.value),
+        }).flatten()
     }
 
     pub(crate) fn find_mut<'a>(node: &'a mut Option<Box<Self>>, key: &K) -> Option<&'a mut V> {
-        match node {
-            None => None,
-            Some(n) => match key.cmp(&n.key) {
-                Less => Self::find_mut(&mut n.left, key),
-                Greater => Self::find_mut(&mut n.right, key),
-                Equal => Some(&mut n.value),
-            },
-        }
+        node.as_mut().map(|n| match key.cmp(&n.key) {
+            Less => Self::find_mut(&mut n.left, key),
+            Greater => Self::find_mut(&mut n.right, key),
+            Equal => Some(&mut n.value),
+        }).flatten()
     }
 }

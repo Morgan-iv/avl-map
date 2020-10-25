@@ -106,4 +106,31 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn test_get() {
+        let mut map = AvlMap::new();
+        map.insert(4, "four".to_owned());
+        map.insert(1, "one".to_owned());
+        map.insert(9, "nine".to_owned());
+        assert_eq!(map.get(&1).unwrap(), &"one".to_owned());
+    }
+    
+    #[test]
+    fn test_get_mut() {
+        let mut map = AvlMap::new();
+        map.insert(4, "four".to_owned());
+        map.insert(1, "one".to_owned());
+        map.insert(9, "nine".to_owned());
+        map.get_mut(&4).unwrap().push_str("_plus");
+        let v = map.into_iter().collect::<Vec<_>>();
+        assert_eq!(
+            v,
+            [
+                (1, "one".to_owned()),
+                (4, "four_plus".to_owned()),
+                (9, "nine".to_owned()),
+            ]
+        );
+    }
 }
