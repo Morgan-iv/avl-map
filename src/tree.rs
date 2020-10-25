@@ -1,15 +1,17 @@
-pub struct Node<K: Eq + Ord + Clone, V> {
-    key: K,
-    value: V,
-    height: u8,
-    left: Option<Box<Node<K, V>>>,
-    right: Option<Box<Node<K, V>>>,
+use std::cmp::Ordering::*;
+
+pub struct Node<K: Eq + Ord, V> {
+    pub(crate) key: K,
+    pub(crate) value: V,
+    pub(crate) height: u8,
+    pub(crate) left: Option<Box<Node<K, V>>>,
+    pub(crate) right: Option<Box<Node<K, V>>>,
 }
 
-impl<K: Eq + Ord + Clone, V> Node<K, V> {
-    pub fn new(key: &K, value: V) -> Node<K, V> {
+impl<K: Eq + Ord, V> Node<K, V> {
+    pub(crate) fn new(key: K, value: V) -> Self {
         Node {
-            key: key.clone(),
+            key,
             value,
             height: 1,
             left: None,
@@ -73,19 +75,30 @@ impl<K: Eq + Ord + Clone, V> Node<K, V> {
         self
     }
 
-    pub fn insert(mut self: Box<Self>, key: &K, value: V) -> Box<Self> {
-        if key < &self.key {
-            self.left = match self.left {
-                Some(n) => Some(n.insert(key, value)),
-                None => Some(Box::new(Node::new(key, value))),
+    pub(crate) fn insert(mut self: Box<Self>, key: K, value: V) -> (Box<Self>, Option<V>) {
+        match key.cmp(&self.key) {
+            Less => {
+                let res = match self.left {
+                    Some(n) => n.insert(key, value),
+                    None => ((Box::new(Node::new(key, value))), None),
+                };
+                self.left = Some(res.0);
+                (self.balance(), res.1)
             }
-        } else {
-            self.right = match self.right {
-                Some(n) => Some(n.insert(key, value)),
-                None => Some(Box::new(Node::new(key, value))),
+            Greater => {
+                let res = match self.right {
+                    Some(n) => n.insert(key, value),
+                    None => ((Box::new(Node::new(key, value))), None),
+                };
+                self.right = Some(res.0);
+                (self.balance(), res.1)
+            }
+            Equal => {
+                let tmp = Some(self.value);
+                self.value = value;
+                (self, tmp)
             }
         }
-        self.balance()
     }
 
     fn find_remove_min(mut self: Box<Self>) -> (Option<Box<Self>>, Box<Self>) {
@@ -99,34 +112,61 @@ impl<K: Eq + Ord + Clone, V> Node<K, V> {
         }
     }
 
-    pub fn remove(mut self: Box<Self>, key: &K) -> Option<Box<Self>> {
-        use std::cmp::Ordering::*;
+    pub(crate) fn remove(mut self: Box<Self>, key: &K) -> (Option<Box<Self>>, Option<V>) {
+        let mut value = None;
         match key.cmp(&self.key) {
             Less => {
                 if let Some(n) = self.left {
-                    self.left = n.remove(key);
+                    let (res, v) = n.remove(key);
+                    self.left = res;
+                    value = v;
                 }
+                (Some(self.balance()), value)
             }
             Greater => {
                 if let Some(n) = self.right {
-                    self.right = n.remove(key);
+                    let (res, v) = n.remove(key);
+                    self.right = res;
+                    value = v;
                 }
+                (Some(self.balance()), value)
             }
             Equal => {
                 let q = self.left.take();
                 let r = self.right.take();
-                drop(self);
-                return match r {
-                    None => q,
+                let v = self.value;
+                match r {
+                    None => (q, Some(v)),
                     Some(n) => {
                         let (r, mut min) = n.find_remove_min();
                         min.right = r;
                         min.left = q;
-                        Some(min.balance())
+                        (Some(min.balance()), Some(v))
                     }
-                };
+                }
             }
-        };
-        Some(self.balance())
+        }
+    }
+
+    pub(crate) fn find<'a>(node: &'a Option<Box<Self>>, key: &K) -> Option<&'a V> {
+        match node {
+            None => None,
+            Some(n) => match key.cmp(&n.key) {
+                Less => Self::find(&n.left, key),
+                Greater => Self::find(&n.right, key),
+                Equal => Some(&n.value),
+            },
+        }
+    }
+
+    pub(crate) fn find_mut<'a>(node: &'a mut Option<Box<Self>>, key: &K) -> Option<&'a mut V> {
+        match node {
+            None => None,
+            Some(n) => match key.cmp(&n.key) {
+                Less => Self::find_mut(&mut n.left, key),
+                Greater => Self::find_mut(&mut n.right, key),
+                Equal => Some(&mut n.value),
+            },
+        }
     }
 }

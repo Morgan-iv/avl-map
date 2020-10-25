@@ -1,20 +1,17 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use rand::{seq::SliceRandom, thread_rng};
-use avl_map::tree::Node;
+use avl_map::map::AvlMap;
 use std::mem::size_of;
 
 fn gen_remove_tree(keys: &Vec<i32>, size: usize) {
-    let mut root: Option<Box<Node<i32, ()>>> = None;
+    let mut root = AvlMap::new();
     for k in &keys[..size] {
-        root = match root {
-            None => Some(Box::new(Node::new(k, ()))),
-            Some(n) => Some(n.insert(k, ())),
-        }
+        root.insert(*k, ());
     }
     for k in &keys[..size] {
-        root = root.unwrap().remove(k);
+        root.remove(k);
     }
-    assert!(root.is_none());
+    assert_eq!(0, root.len());
 }
 
 fn bench_tree(c: &mut Criterion) {
