@@ -59,6 +59,32 @@ mod tests {
     }
 
     #[test]
+    fn test_mut_iter() {
+        let mut map = AvlMap::new();
+        map.insert(4, "four".to_owned());
+        map.insert(1, "one".to_owned());
+        map.insert(9, "nine".to_owned());
+        map.insert(2, "two".to_owned());
+        map.insert(6, "six".to_owned());
+        map.insert(7, "seven".to_owned());
+        for (_, v) in &mut map {
+            v.push_str("_plus");
+        }
+        let v = map.into_iter().collect::<Vec<_>>();
+        assert_eq!(
+            v,
+            [
+                (1, "one_plus".to_owned()),
+                (2, "two_plus".to_owned()),
+                (4, "four_plus".to_owned()),
+                (6, "six_plus".to_owned()),
+                (7, "seven_plus".to_owned()),
+                (9, "nine_plus".to_owned()),
+            ]
+        );
+    }
+
+    #[test]
     fn test_reverse_iter() {
         let mut map = AvlMap::new();
         map.insert(4, "four");
