@@ -2,12 +2,12 @@ use crate::tree::Node;
 use crate::iter::AvlMapIter;
 use std::iter::IntoIterator;
 
-pub struct AvlMap<K: Eq + Ord, V> {
+pub struct AvlMap<K: Ord, V> {
     pub(crate) root: Option<Box<Node<K, V>>>,
     pub(crate) size: usize,
 }
 
-impl<K: Eq + Ord, V> AvlMap<K, V> {
+impl<K: Ord, V> AvlMap<K, V> {
     pub fn new() -> Self {
         AvlMap {
             root: None,
@@ -65,7 +65,7 @@ impl<K: Eq + Ord, V> AvlMap<K, V> {
     }
 }
 
-impl<K: Eq + Ord, V> IntoIterator for AvlMap<K, V> {
+impl<K: Ord, V> IntoIterator for AvlMap<K, V> {
     type Item = (K, V);
     type IntoIter = AvlMapIter<Box<Node<K, V>>>;
 
@@ -74,7 +74,7 @@ impl<K: Eq + Ord, V> IntoIterator for AvlMap<K, V> {
     }
 }
 
-impl<'a, K: Eq + Ord, V> IntoIterator for &'a mut AvlMap<K, V> {
+impl<'a, K: Ord, V> IntoIterator for &'a mut AvlMap<K, V> {
     type Item = (&'a K, &'a mut V);
     type IntoIter = AvlMapIter<&'a mut Box<Node<K, V>>>;
 
@@ -83,7 +83,7 @@ impl<'a, K: Eq + Ord, V> IntoIterator for &'a mut AvlMap<K, V> {
     }
 }
 
-impl<'a, K: Eq + Ord, V> IntoIterator for &'a AvlMap<K, V> {
+impl<'a, K: Ord, V> IntoIterator for &'a AvlMap<K, V> {
     type Item = (&'a K, &'a V);
     type IntoIter = AvlMapIter<&'a Box<Node<K, V>>>;
 

@@ -43,7 +43,7 @@ where
     fn split(self) -> (Option<Self>, Self::ET, Option<Self>);
 }
 
-impl<K: Eq + Ord, V> Split for Box<Node<K, V>> {
+impl<K: Ord, V> Split for Box<Node<K, V>> {
     type ET = (K, V);
 
     fn split(self) -> (Option<Self>, Self::ET, Option<Self>) {
@@ -51,7 +51,7 @@ impl<K: Eq + Ord, V> Split for Box<Node<K, V>> {
     }
 }
 
-impl<'a, K: Eq + Ord, V> Split for &'a mut Box<Node<K, V>> {
+impl<'a, K: Ord, V> Split for &'a mut Box<Node<K, V>> {
     type ET = (&'a K, &'a mut V);
 
     fn split(self) -> (Option<Self>, Self::ET, Option<Self>) {
@@ -59,7 +59,7 @@ impl<'a, K: Eq + Ord, V> Split for &'a mut Box<Node<K, V>> {
     }
 }
 
-impl<'a, K: Eq + Ord, V> Split for &'a Box<Node<K, V>> {
+impl<'a, K: Ord, V> Split for &'a Box<Node<K, V>> {
     type ET = (&'a K, &'a V);
 
     fn split(self) -> (Option<Self>, Self::ET, Option<Self>) {

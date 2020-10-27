@@ -1,6 +1,6 @@
 use std::cmp::Ordering::*;
 
-pub struct Node<K: Eq + Ord, V> {
+pub struct Node<K: Ord, V> {
     pub(crate) key: K,
     pub(crate) value: V,
     pub(crate) height: u8,
@@ -8,7 +8,7 @@ pub struct Node<K: Eq + Ord, V> {
     pub(crate) right: Option<Box<Node<K, V>>>,
 }
 
-impl<K: Eq + Ord, V> Node<K, V> {
+impl<K: Ord, V> Node<K, V> {
     pub(crate) fn new(key: K, value: V) -> Self {
         Node {
             key,
